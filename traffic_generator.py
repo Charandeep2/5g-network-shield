@@ -93,7 +93,7 @@ def send_attack_probe(target_ip, src_ip=None, count=25, interval=0.05):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="FRI-DAY 5G Traffic Generator (Hybrid Scapy/Socket)")
-    parser.add_argument("--target", default="192.168.43.100", help="Target UPF IP address (Dell G15)")
+    parser.add_argument("--target", default="10.0.8.254", help="Target UPF IP address (Dell G15)")
     parser.add_argument("--src", default="192.168.43.55", help="Source IP address of attacker/client")
     parser.add_argument("--mode", choices=["attack", "normal", "mixed"], default=None, help="Traffic mode")
     parser.add_argument("--count", type=int, default=20, help="Number of packets")

@@ -40,18 +40,25 @@ def send_attack(target_ip, target_port=2152, count=25, interval=0.05):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="FRI-DAY Lightweight 5G Sender (No Scapy needed)")
-    parser.add_argument("--target", default="192.168.43.100", help="Target UPF IP address (Dell G15)")
+    parser.add_argument("--target", default="10.0.8.254", help="Target UPF IP address (Dell G15)")
     parser.add_argument("--port", type=int, default=2152, help="Target UDP port (default: 2152)")
     parser.add_argument("--mode", choices=["attack", "normal", "mixed"], default=None, help="Mode: attack, normal, mixed")
     parser.add_argument("--count", type=int, default=20, help="Number of packets")
     args = parser.parse_args()
+
+    target_ip = args.target
 
     mode = args.mode
     if not mode:
         print("\n" + "=" * 60)
         print("📡 FRI-DAY LIGHTWEIGHT 5G TRAFFIC SENDER")
         print("=" * 60)
-        print(f"🎯 Target UPF: {args.target}:{args.port}")
+        print(f"Default Target UPF IP: {target_ip}:{args.port}")
+        custom_target = input(f"Enter Target UPF IP [Press Enter for {target_ip}]: ").strip()
+        if custom_target:
+            target_ip = custom_target
+
+        print(f"\n🎯 Active Target: {target_ip}:{args.port}")
         print("\nSelect traffic type to send:")
         print("  [1] Continuous Real-Time Stream (Normal 5G + Periodic Attack Spikes) [RECOMMENDED]")
         print("  [2] Send NORMAL 5G Traffic Only (Green / SEV-0 Nominal)")
@@ -68,19 +75,19 @@ if __name__ == "__main__":
         else:
             mode = "mixed"
 
-    print(f"\n[*] Executing mode: {mode.upper()}")
+    print(f"\n[*] Executing mode: {mode.upper()} against {target_ip}:{args.port}")
 
     if mode == "normal":
-        send_normal(args.target, target_port=args.port, count=args.count)
+        send_normal(target_ip, target_port=args.port, count=args.count)
     elif mode == "attack":
-        send_attack(args.target, target_port=args.port, count=args.count)
+        send_attack(target_ip, target_port=args.port, count=args.count)
     elif mode == "mixed":
         print("[*] Starting mixed live demo (Press Ctrl+C to stop)...")
         try:
             while True:
-                send_normal(args.target, target_port=args.port, count=10, interval=0.1)
+                send_normal(target_ip, target_port=args.port, count=10, interval=0.1)
                 time.sleep(1)
-                send_attack(args.target, target_port=args.port, count=15, interval=0.03)
+                send_attack(target_ip, target_port=args.port, count=15, interval=0.03)
                 print("[*] Resuming normal stream in 4 seconds...")
                 time.sleep(4)
         except KeyboardInterrupt:

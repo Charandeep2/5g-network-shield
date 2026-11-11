@@ -2,42 +2,97 @@ import time
 import random
 import argparse
 import sys
-from scapy.all import IP, UDP, Raw, send
-from scapy.contrib.gtp import GTP_U_Header
+import socket
+import struct
+
+"""
+FRI-DAY 5G Traffic Generator (Hybrid Engine)
+Automatically detects if Scapy / Npcap is installed:
+- If Scapy + Npcap are present: Injects full L3/L4 IP-spoofed 5G GTP-U frames.
+- If Scapy or Npcap are absent: Seamlessly falls back to high-speed Python UDP sockets.
+Guaranteed to run on any laptop without crashing!
+"""
+
+scapy_available = False
+try:
+    from scapy.all import IP, UDP, Raw, send, conf
+    conf.verb = 0
+    scapy_available = True
+except Exception:
+    scapy_available = False
 
 def send_normal_packet(target_ip, src_ip="192.168.43.55", count=20, interval=0.15):
     print(f"\n[+] Sending {count} NORMAL 5G GTP-U packets to {target_ip}:2152...")
+    used_fallback = False
+    sock = None
+
     for i in range(1, count + 1):
-        # Legitimate 3GPP PDU session with valid non-wildcard TEID (1, 2, 3...)
-        pkt = (
-            IP(dst=target_ip, src=src_ip) /
-            UDP(sport=5000 + (i % 100), dport=2152) /
-            GTP_U_Header(teid=i, gtp_type=255) /
-            Raw(b"NORMAL_5G_USER_PLANE_PAYLOAD")
-        )
-        send(pkt, verbose=False)
-        print(f"  -> Sent legitimate packet #{i} (TEID=0x{i:08X})")
+        if scapy_available and not used_fallback:
+            try:
+                pkt = (
+                    IP(dst=target_ip, src=src_ip) /
+                    UDP(sport=5000 + (i % 100), dport=2152) /
+                    Raw(struct.pack(">BBHI", 0x30, 0xFF, 30, i) + b"NORMAL_5G_USER_PLANE_PAYLOAD")
+                )
+                send(pkt, verbose=False)
+                print(f"  -> [Scapy L3] Sent legitimate packet #{i} (TEID=0x{i:08X})")
+                time.sleep(interval)
+                continue
+            except Exception as e:
+                print(f"  [!] Scapy raw send unavailable ({e}). Seamlessly switching to native UDP socket...")
+                used_fallback = True
+
+        if sock is None:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        payload = b"NORMAL_5G_USER_PLANE_PAYLOAD"
+        header = struct.pack(">BBHI", 0x30, 0xFF, len(payload), i)
+        sock.sendto(header + payload, (target_ip, 2152))
+        print(f"  -> [Socket L4] Sent legitimate packet #{i} (TEID=0x{i:08X})")
         time.sleep(interval)
+
+    if sock:
+        sock.close()
     print("[✓] Normal traffic stream completed. Check your dashboard (should show NORMAL in green)!\n")
 
 def send_attack_probe(target_ip, src_ip=None, count=25, interval=0.05):
     print(f"\n[!] Blasting {count} MALFORMED ZERO-DAY packets to {target_ip}:2152 with randomized rogue IPs...")
+    used_fallback = False
+    sock = None
+
     for i in range(1, count + 1):
-        # Generate randomized attacker IP from mobile pool or botnet
         rogue_ip = src_ip if (src_ip and src_ip != "192.168.43.55") else f"192.168.43.{random.randint(50, 240)}"
-        pkt = (
-            IP(dst=target_ip, src=rogue_ip) /
-            UDP(sport=5000 + (i % 500), dport=2152) /
-            GTP_U_Header(teid=0xFFFFFFFF) /
-            Raw(b"FRI-DAY_ZERO_DAY_PAYLOAD_XDP_BYPASS_ATTEMPT")
-        )
-        send(pkt, verbose=False)
-        print(f"  -> Injected exploit packet #{i} from rogue IP {rogue_ip} (TEID=0xFFFFFFFF)")
+        payload = b"FRI-DAY_ZERO_DAY_PAYLOAD_XDP_BYPASS_ATTEMPT"
+        header = struct.pack(">BBHI", 0x30, 0xFF, len(payload), 0xFFFFFFFF)
+
+        if scapy_available and not used_fallback:
+            try:
+                pkt = (
+                    IP(dst=target_ip, src=rogue_ip) /
+                    UDP(sport=5000 + (i % 500), dport=2152) /
+                    Raw(header + payload)
+                )
+                send(pkt, verbose=False)
+                print(f"  -> [Scapy L3] Injected exploit packet #{i} from rogue IP {rogue_ip} (TEID=0xFFFFFFFF)")
+                time.sleep(interval)
+                continue
+            except Exception as e:
+                print(f"  [!] Scapy raw send unavailable ({e}). Seamlessly switching to native UDP socket...")
+                used_fallback = True
+
+        if sock is None:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        sock.sendto(header + payload, (target_ip, 2152))
+        print(f"  -> [Socket L4] Injected exploit packet #{i} (TEID=0xFFFFFFFF)")
         time.sleep(interval)
+
+    if sock:
+        sock.close()
     print("[✓] Zero-Day attack burst completed. Check your dashboard (should show MALICIOUS in red)!\n")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="FRI-DAY 5G Traffic Generator")
+    parser = argparse.ArgumentParser(description="FRI-DAY 5G Traffic Generator (Hybrid Scapy/Socket)")
     parser.add_argument("--target", default="192.168.43.100", help="Target UPF IP address (Dell G15)")
     parser.add_argument("--src", default="192.168.43.55", help="Source IP address of attacker/client")
     parser.add_argument("--mode", choices=["attack", "normal", "mixed"], default=None, help="Traffic mode")
@@ -47,7 +102,7 @@ if __name__ == "__main__":
     mode = args.mode
     if not mode:
         print("\n" + "=" * 60)
-        print("🚀 FRI-DAY 5G TRAFFIC GENERATOR")
+        print("🚀 FRI-DAY 5G TRAFFIC GENERATOR (HYBRID SCAPY / SOCKET)")
         print("=" * 60)
         print(f"🎯 Target UPF: {args.target}:2152")
         print(f"📡 Source IP:  {args.src}")

@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FRI-DAY // 5G Core Autonomous Defense SOC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              bg: '#070b14',
+              card: '#0d1527',
+              cardHover: '#111c34',
+              border: '#1b2a4a',
+              accent: '#00f0ff',
+              danger: '#ff1744',
+              dangerDim: 'rgba(255, 23, 68, 0.15)',
+              success: '#00e676',
+              successDim: 'rgba(0, 230, 118, 0.15)',
+              warning: '#ffab00',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #070b14;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.05) 0%, transparent 60%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 36px 36px, 36px 36px;
+    }
+    .badge-pulse {
+      animation: pulseGlow 1.5s infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: #070b14; }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen font-sans flex flex-col antialiased">
+
+  <!-- TOP APP BAR -->
+  <header class="border-b border-brand-border bg-brand-bg/90 backdrop-blur sticky top-0 z-50 px-4 sm:px-6 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+          <span class="material-symbols-outlined text-white text-2xl font-bold">security</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-black tracking-wider text-white">FRI-DAY</h1>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">5G AGENTIC SOC</span>
+          </div>
+          <p class="text-xs text-slate-400 font-mono">User Plane Function (UPF) • Active Shield Defense Framework</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        <!-- MOBILE ALERTS MODAL BUTTON -->
+        <button id="btnOpenMobileModal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950 border border-cyan-700 text-cyan-300 text-xs font-bold transition hover:bg-cyan-900">
+          <span id="mobileStatusDot" class="w-2 h-2 rounded-full bg-yellow-400"></span>
+          <span class="material-symbols-outlined text-sm">phone_iphone</span>
+          <span>MOBILE ALERTS</span>
+        </button>
+
+        <!-- TOGGLE LIVE STREAM -->
+        <button id="btnToggleStream" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-600 text-emerald-400 text-xs font-bold transition">
+          <span id="streamDot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="streamToggleLabel">LIVE STREAM: ACTIVE</span>
+        </button>
+
+        <!-- TOGGLE AUTO BOTNET -->
+        <button id="btnToggleAutoAttack" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-300 text-xs font-bold transition hover:bg-slate-800">
+          <span id="autoAttackDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+          <span id="autoAttackLabel">AUTO BOTNET: OFF</span>
+        </button>
+
+        <!-- TEST NORMAL 5G -->
+        <button id="btnNormal" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-600 text-emerald-300 text-xs font-bold transition">
+          <span class="material-symbols-outlined text-base">check_circle</span>
+          <span>TEST NORMAL 5G</span>
+        </button>
+
+        <!-- INJECT ZERO-DAY ATTACK -->
+        <button id="btnSimulate" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition shadow-md shadow-red-600/30">
+          <span class="material-symbols-outlined text-base">bolt</span>
+          <span>INJECT ZERO-DAY ATTACK</span>
+        </button>
+
+        <!-- RESET -->
+        <button id="btnReset" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-card hover:bg-brand-cardHover border border-brand-border text-slate-300 text-xs font-bold transition">
+          <span class="material-symbols-outlined text-base">restart_alt</span>
+          <span>RESET</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col gap-6">
+
+    <!-- 1. GIANT CLASSIFICATION STATUS BANNER -->
+    <section id="statusBanner" class="p-6 sm:p-8 rounded-2xl border transition-all duration-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-brand-successDim border-brand-success/40 text-brand-success">
+      <div class="flex items-center gap-4">
+        <div id="statusIconWrap" class="w-16 h-16 rounded-2xl bg-brand-success/20 flex items-center justify-center shrink-0">
+          <span id="statusIcon" class="material-symbols-outlined text-4xl text-brand-success">verified_user</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="badgeVerdict" class="text-xs font-black tracking-widest px-2.5 py-1 rounded bg-brand-success/30 text-white uppercase font-mono">SEV-0 NOMINAL</span>
+            <span class="text-xs text-slate-400 font-mono" id="lastUpdated">Monitoring 5G ingress...</span>
+          </div>
+          <h2 id="statusHeadline" class="text-2xl sm:text-3xl font-black tracking-tight text-white mt-1">NORMAL 5G CORE TRAFFIC</h2>
+          <p id="statusSubtext" class="text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            All GTP-U packets within standard 3GPP thresholds. No anomalous reconstruction loss detected.
+          </p>
+        </div>
+      </div>
+      <div class="flex flex-col md:items-end gap-1 shrink-0 font-mono">
+        <span class="text-xs text-slate-400 uppercase tracking-wider">Neural Reconstruction Error</span>
+        <div class="flex items-baseline gap-1.5">
+          <span id="heroMse" class="text-4xl font-black text-brand-success">0.0030</span>
+          <span class="text-xs text-slate-400">MSE</span>
+        </div>
+        <span id="thresholdCmp" class="text-xs text-brand-success font-semibold">✓ 96.2% Below Anomaly Ceiling (0.0800)</span>
+      </div>
+    </section>
+
+    <!-- 2. DEFENSE MODULES STATUS STRIP (ADD-ONS 1, 2, 5) -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <!-- ADD-ON 1: DPI SIGNATURE SHIELD -->
+      <div class="p-4 rounded-xl bg-brand-card border border-brand-border flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-xl">filter_alt</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-white tracking-wide">L7 DPI SIGNATURE FILTER</span>
+              <span class="px-1.5 py-0.2 rounded bg-cyan-900/60 text-cyan-300 text-[10px] font-mono">ADD-ON 1</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-mono mt-0.5">Payload: <strong class="text-cyan-400">TEID 0xFFFFFFFF</strong> (IP-Spoof Immune)</p>
+          </div>
+        </div>
+        <div class="text-right font-mono">
+          <div id="statDpiDrops" class="text-lg font-black text-cyan-400">0</div>
+          <span class="text-[10px] text-slate-400 uppercase">Weapons Neutralized</span>
+        </div>
+      </div>
+
+      <!-- ADD-ON 2: HOST KERNEL AUTO-KILL SWITCH -->
+      <div class="p-4 rounded-xl bg-brand-card border border-brand-border flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-red-950 border border-red-800 text-red-400 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-xl">gavel</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-white tracking-wide">HOST KERNEL AUTO-KILL</span>
+              <span class="px-1.5 py-0.2 rounded bg-red-900/60 text-red-300 text-[10px] font-mono">ADD-ON 2</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-mono mt-0.5"><span id="lblKillswitchMode" class="text-emerald-400 font-bold">ACTIVE DROP</span> • netsh UDP 2152</p>
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-1">
+          <div class="flex items-center gap-1.5 font-mono">
+            <span id="statBlockedHosts" class="text-lg font-black text-red-400">0</span>
+            <span class="text-[10px] text-slate-400 uppercase">Blocked</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button id="btnToggleKillMode" class="text-[10px] text-cyan-400 hover:text-cyan-300 font-mono">Toggle Mode</button>
+            <span class="text-slate-600 text-[10px]">|</span>
+            <button id="btnFlushFirewall" class="text-[10px] text-slate-400 hover:text-white font-mono underline">Flush</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADD-ON 5: MOBILE COMMAND ALERTS -->
+      <div class="p-4 rounded-xl bg-brand-card border border-brand-border flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-purple-950 border border-purple-800 text-purple-400 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-xl">notifications_active</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-white tracking-wide">MOBILE TELEGRAM ALERTS</span>
+              <span class="px-1.5 py-0.2 rounded bg-purple-900/60 text-purple-300 text-[10px] font-mono">ADD-ON 5</span>
+            </div>
+            <p id="labelMobileStatus" class="text-[11px] text-slate-400 font-mono mt-0.5">Push Ping: <strong class="text-yellow-400">Standby (Click to link)</strong></p>
+          </div>
+        </div>
+        <button id="btnQuickTestPing" class="px-2.5 py-1 rounded bg-purple-900/60 hover:bg-purple-800 text-purple-300 border border-purple-700 text-[10px] font-bold font-mono">
+          TEST PING
+        </button>
+      </div>
+
+    </section>
+
+    <!-- 3. FOUR KEY TELEMETRY TILES -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- TILE 1: VERDICT -->
+      <div class="p-5 rounded-xl bg-brand-card border border-brand-border flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+          <span>CLASSIFICATION</span>
+          <span class="material-symbols-outlined text-base">analytics</span>
+        </div>
+        <div class="mt-3">
+          <div id="tileClassification" class="text-2xl font-black text-brand-success tracking-wide">NORMAL</div>
+          <p class="text-xs text-slate-400 mt-1 font-mono">Unsupervised Autoencoder</p>
+        </div>
+      </div>
+
+      <!-- TILE 2: MSE SCORE -->
+      <div class="p-5 rounded-xl bg-brand-card border border-brand-border flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+          <span>MSE LOSS</span>
+          <span class="material-symbols-outlined text-base">ssid_chart</span>
+        </div>
+        <div class="mt-3">
+          <div id="tileMse" class="text-2xl font-black text-white font-mono">0.0030</div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+            <div id="tileMseBar" class="bg-brand-success h-full transition-all duration-500" style="width: 4%;"></div>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-1.5 flex justify-between font-mono">
+            <span>Score: <span id="tileMseRaw">0.0030</span></span>
+            <span>Ceiling: 0.0800</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- TILE 3: TEID -->
+      <div class="p-5 rounded-xl bg-brand-card border border-brand-border flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+          <span>TUNNEL IDENTIFIER (TEID)</span>
+          <span class="material-symbols-outlined text-base">hub</span>
+        </div>
+        <div class="mt-3">
+          <div id="tileTeid" class="text-2xl font-black text-cyan-400 font-mono">0x000003E9</div>
+          <p id="tileTeidStatus" class="text-xs text-slate-400 mt-1 font-mono">Authorized Session Context</p>
+        </div>
+      </div>
+
+      <!-- TILE 4: SOURCE IP -->
+      <div class="p-5 rounded-xl bg-brand-card border border-brand-border flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+          <span>SOURCE INGRESS IP</span>
+          <span class="material-symbols-outlined text-base">router</span>
+        </div>
+        <div class="mt-3">
+          <div id="tileSrcIp" class="text-2xl font-black text-white font-mono">192.168.43.55</div>
+          <p id="tileSrcRole" class="text-xs text-slate-400 mt-1 font-mono">Client Endpoint</p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 4. AGENTIC INCIDENT RESPONSE CARD (FEATURING DPI & KILL-SWITCH) -->
+    <section class="rounded-2xl bg-brand-card border border-brand-border overflow-hidden">
+      <div class="px-6 py-4 border-b border-brand-border flex flex-wrap items-center justify-between gap-3 bg-brand-bg/60">
+        <div class="flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-cyan-400">psychology</span>
+          <h3 class="text-sm font-bold text-white tracking-wide uppercase">Autonomous AI Incident Analyst (L7 DPI + Kernel Killswitch)</h3>
+        </div>
+        <span id="agentStatusBadge" class="text-[11px] font-mono px-2.5 py-0.5 rounded bg-brand-success/20 text-brand-success border border-brand-success/40">
+          STANDBY // AWAITING ANOMALY
+        </span>
+      </div>
+
+      <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- LEFT: THREAT DIAGNOSIS -->
+        <div class="flex flex-col gap-3">
+          <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">1. Threat Diagnosis (DPI Signature Analysis)</h4>
+          <div id="diagnosisBox" class="p-4 rounded-xl bg-brand-bg border border-brand-border text-sm leading-relaxed text-slate-300 font-mono whitespace-pre-wrap min-h-[140px]">
+            No anomalous drift detected. 5G GTP-U user plane traffic aligns with authorized 3GPP Session Management Function (SMF) state machine.
+          </div>
+        </div>
+
+        <!-- RIGHT: AUTONOMOUS ACTION / IPTABLES -->
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider font-mono">2. Synthesized L7 DPI & Kernel Rules</h4>
+            <button id="btnCopyRule" class="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1 transition">
+              <span class="material-symbols-outlined text-sm">content_copy</span>
+              <span id="btnCopyText">COPY RULE</span>
+            </button>
+          </div>
+          <pre id="actionBox" class="p-4 rounded-xl bg-slate-950 border border-brand-border text-xs text-brand-success font-mono overflow-x-auto whitespace-pre-wrap select-all min-h-[140px] flex items-center">
+# Autonomous Firewall Engine on Standby
+# L7 Deep Packet Inspection (DPI) filter loaded for TEID 0xFFFFFFFF
+# Live Windows Defender Firewall rule automatically injected on breach
+          </pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. REAL-TIME PACKET CLASSIFICATION STREAM TABLE -->
+    <section class="rounded-2xl bg-brand-card border border-brand-border overflow-hidden">
+      <div class="px-6 py-3.5 border-b border-brand-border flex flex-wrap items-center justify-between gap-3 bg-brand-bg/50">
+        <div class="flex items-center gap-2.5">
+          <span class="material-symbols-outlined text-slate-400">table_rows</span>
+          <h3 class="text-sm font-bold text-white tracking-wide uppercase">5G Packet Surveillance Stream</h3>
+        </div>
+
+        <!-- STREAM FILTER TABS -->
+        <div class="flex items-center gap-1.5 p-1 rounded-lg bg-slate-950 border border-brand-border font-mono text-xs">
+          <button id="tabAll" class="px-3 py-1 rounded-md bg-brand-card text-white font-bold transition">
+            ALL TRAFFIC (<span id="cntAll">0</span>)
+          </button>
+          <button id="tabThreats" class="px-3 py-1 rounded-md text-red-400 hover:text-red-300 font-bold transition flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+            <span>THREATS (<span id="cntThreats">0</span>)</span>
+          </button>
+          <button id="tabNormal" class="px-3 py-1 rounded-md text-slate-400 hover:text-slate-200 transition">
+            NORMAL (<span id="cntNormal">0</span>)
+          </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="btnExportLog" class="text-xs text-cyan-400 hover:text-cyan-300 font-mono flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">download</span>
+            <span>EXPORT AUDIT JSON</span>
+          </button>
+          <span class="text-xs font-mono text-slate-400">• Polling at 1.2 Hz</span>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs font-mono">
+          <thead class="bg-brand-bg/80 text-slate-400 uppercase tracking-wider border-b border-brand-border">
+            <tr>
+              <th class="px-6 py-3">Timestamp</th>
+              <th class="px-6 py-3">Source IP</th>
+              <th class="px-6 py-3">Protocol</th>
+              <th class="px-6 py-3">TEID</th>
+              <th class="px-6 py-3">Neural MSE</th>
+              <th class="px-6 py-3">Classification</th>
+              <th class="px-6 py-3">Status</th>
+            </tr>
+          </thead>
+          <tbody id="packetTableBody" class="divide-y divide-brand-border/60">
+            <tr>
+              <td colspan="7" class="px-6 py-8 text-center text-slate-500 font-sans">
+                Streaming 5G packets in real time...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TELEGRAM CONFIGURATION MODAL (ADD-ON 5) -->
+  <div id="mobileModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-brand-card border border-brand-border rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button id="btnCloseModal" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-purple-950 border border-purple-800 text-purple-400 flex items-center justify-center">
+          <span class="material-symbols-outlined text-xl">phone_iphone</span>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white">Mobile Command Alerts</h3>
+          <p class="text-xs text-slate-400">Telegram Bot Push Integration</p>
+        </div>
+      </div>
+
+      <div class="space-y-4 font-mono text-xs">
+        <div>
+          <label class="block text-slate-300 font-bold mb-1">Telegram Bot Token:</label>
+          <input id="inputBotToken" type="password" placeholder="e.g. 7123456789:AAHxyz..." class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div>
+          <label class="block text-slate-300 font-bold mb-1">Your Telegram Chat ID:</label>
+          <input id="inputChatId" type="text" placeholder="e.g. 123456789" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-slate-200 outline-none focus:border-cyan-400" />
+        </div>
+
+        <div class="p-3 bg-slate-950/70 border border-slate-800 rounded-lg text-[11px] text-slate-400 leading-relaxed font-sans">
+          <strong>⚡ 60-Second Setup:</strong><br>
+          1. Open Telegram, search <strong class="text-cyan-400">@BotFather</strong> and send <code>/newbot</code> to get your Token.<br>
+          2. Search <strong class="text-cyan-400">@userinfobot</strong> and send <code>/start</code> to get your Chat ID.<br>
+          3. Paste them here and click <strong>Save & Test Link</strong>!
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button id="btnSaveTelegram" class="flex-1 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold transition">
+            SAVE CREDENTIALS
+          </button>
+          <button id="btnTestPingModal" class="py-2 px-3 rounded-lg bg-purple-900 hover:bg-purple-800 text-purple-200 font-bold border border-purple-700 transition">
+            TEST PING
+          </button>
+        </div>
+        <p id="modalFeedback" class="text-center text-[11px] font-sans"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="mt-auto border-t border-brand-border py-4 px-6 text-center text-xs text-slate-500 font-mono">
+    FRI-DAY: 5G Core Autonomous Threat Detection & Agentic Defense Framework • L7 DPI + Host Kernel Killswitch + Mobile Bot
+  </footer>
+
+  <!-- CLIENT SCRIPT -->
+  <script>
+    (function() {
+      let cachedHistory = [];
+
+      // Elements
+      const statusBanner = document.getElementById('statusBanner');
+      const statusIcon = document.getElementById('statusIcon');
+      const statusIconWrap = document.getElementById('statusIconWrap');
+      const badgeVerdict = document.getElementById('badgeVerdict');
+      const statusHeadline = document.getElementById('statusHeadline');
+      const statusSubtext = document.getElementById('statusSubtext');
+      const heroMse = document.getElementById('heroMse');
+      const thresholdCmp = document.getElementById('thresholdCmp');
+
+      const tileClassification = document.getElementById('tileClassification');
+      const tileMse = document.getElementById('tileMse');
+      const tileMseBar = document.getElementById('tileMseBar');
+      const tileMseRaw = document.getElementById('tileMseRaw');
+      const tileTeid = document.getElementById('tileTeid');
+      const tileTeidStatus = document.getElementById('tileTeidStatus');
+      const tileSrcIp = document.getElementById('tileSrcIp');
+      const tileSrcRole = document.getElementById('tileSrcRole');
+
+      const agentStatusBadge = document.getElementById('agentStatusBadge');
+      const diagnosisBox = document.getElementById('diagnosisBox');
+      const actionBox = document.getElementById('actionBox');
+      const packetTableBody = document.getElementById('packetTableBody');
+      const lastUpdated = document.getElementById('lastUpdated');
+
+      const btnToggleStream = document.getElementById('btnToggleStream');
+      const streamToggleLabel = document.getElementById('streamToggleLabel');
+      const streamDot = document.getElementById('streamDot');
+
+      const btnToggleAutoAttack = document.getElementById('btnToggleAutoAttack');
+      const autoAttackLabel = document.getElementById('autoAttackLabel');
+      const autoAttackDot = document.getElementById('autoAttackDot');
+
+      const statDpiDrops = document.getElementById('statDpiDrops');
+      const statBlockedHosts = document.getElementById('statBlockedHosts');
+      const btnFlushFirewall = document.getElementById('btnFlushFirewall');
+      const lblKillswitchMode = document.getElementById('lblKillswitchMode');
+      const btnToggleKillMode = document.getElementById('btnToggleKillMode');
+      const labelMobileStatus = document.getElementById('labelMobileStatus');
+      const mobileStatusDot = document.getElementById('mobileStatusDot');
+
+      const btnNormal = document.getElementById('btnNormal');
+      const btnSimulate = document.getElementById('btnSimulate');
+      const btnReset = document.getElementById('btnReset');
+      const btnCopyRule = document.getElementById('btnCopyRule');
+      const btnCopyText = document.getElementById('btnCopyText');
+      const btnExportLog = document.getElementById('btnExportLog');
+
+      // Filter tabs
+      const tabAll = document.getElementById('tabAll');
+      const tabThreats = document.getElementById('tabThreats');
+      const tabNormal = document.getElementById('tabNormal');
+      const cntAll = document.getElementById('cntAll');
+      const cntThreats = document.getElementById('cntThreats');
+      const cntNormal = document.getElementById('cntNormal');
+      let currentFilter = 'all';
+      let latestData = null;
+
+      // Modal elements
+      const mobileModal = document.getElementById('mobileModal');
+      const btnOpenMobileModal = document.getElementById('btnOpenMobileModal');
+      const btnCloseModal = document.getElementById('btnCloseModal');
+      const inputBotToken = document.getElementById('inputBotToken');
+      const inputChatId = document.getElementById('inputChatId');
+      const btnSaveTelegram = document.getElementById('btnSaveTelegram');
+      const btnTestPingModal = document.getElementById('btnTestPingModal');
+      const btnQuickTestPing = document.getElementById('btnQuickTestPing');
+      const modalFeedback = document.getElementById('modalFeedback');
+
+      function updateDashboard(data) {
+        if (!data) return;
+        cachedHistory = data.history || [];
+        const isMalicious = data.status === "Threat Detected" || data.classification === "MALICIOUS" || (data.mse_score && data.mse_score > 0.08);
+        const now = new Date().toLocaleTimeString();
+        lastUpdated.textContent = `Updated: ${now}`;
+
+        // Add-on stats
+        if (data.dpi_blocks_count !== undefined) {
+          statDpiDrops.textContent = data.dpi_blocks_count;
+        }
+        if (data.blocked_ips !== undefined) {
+          statBlockedHosts.textContent = data.blocked_ips.length;
+        }
+        if (data.killswitch_mode !== undefined) {
+          if (data.killswitch_mode === "active") {
+            lblKillswitchMode.textContent = "ACTIVE DROP";
+            lblKillswitchMode.className = "text-emerald-400 font-bold";
+          } else {
+            lblKillswitchMode.textContent = "MONITOR ONLY";
+            lblKillswitchMode.className = "text-yellow-400 font-bold";
+          }
+        }
+        if (data.telegram_configured) {
+          labelMobileStatus.innerHTML = 'Push Ping: <strong class="text-emerald-400">ACTIVE (Linked)</strong>';
+          mobileStatusDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        } else {
+          labelMobileStatus.innerHTML = 'Push Ping: <strong class="text-yellow-400">Standby (Click to link)</strong>';
+          mobileStatusDot.className = 'w-2 h-2 rounded-full bg-yellow-400';
+        }
+
+        // Stream button state sync
+        if (data.auto_stream !== undefined) {
+          if (data.auto_stream) {
+            btnToggleStream.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-600 text-emerald-400 text-xs font-bold transition';
+            streamDot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+            streamToggleLabel.textContent = 'LIVE STREAM: ACTIVE';
+          } else {
+            btnToggleStream.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 text-xs font-bold transition';
+            streamDot.className = 'w-2 h-2 rounded-full bg-slate-500';
+            streamToggleLabel.textContent = 'LIVE STREAM: PAUSED';
+          }
+        }
+
+        // Auto Botnet button state sync
+        if (data.auto_attack !== undefined) {
+          if (data.auto_attack) {
+            btnToggleAutoAttack.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-950 border border-purple-600 text-purple-300 text-xs font-bold transition';
+            autoAttackDot.className = 'w-2 h-2 rounded-full bg-purple-400 animate-ping';
+            autoAttackLabel.textContent = 'AUTO BOTNET: ON';
+          } else {
+            btnToggleAutoAttack.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 text-xs font-bold transition hover:bg-slate-800';
+            autoAttackDot.className = 'w-2 h-2 rounded-full bg-slate-500';
+            autoAttackLabel.textContent = 'AUTO BOTNET: OFF';
+          }
+        }
+
+        // 1. Hero & Classification Banner
+        if (isMalicious) {
+          statusBanner.className = 'p-6 sm:p-8 rounded-2xl border transition-all duration-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-brand-dangerDim border-brand-danger text-brand-danger badge-pulse';
+          statusIcon.textContent = 'warning';
+          statusIcon.className = 'material-symbols-outlined text-4xl text-brand-danger';
+          statusIconWrap.className = 'w-16 h-16 rounded-2xl bg-brand-danger/25 flex items-center justify-center shrink-0';
+          badgeVerdict.className = 'text-xs font-black tracking-widest px-2.5 py-1 rounded bg-red-600 text-white uppercase font-mono';
+          badgeVerdict.textContent = 'SEV-1 CRITICAL';
+          statusHeadline.textContent = 'MALICIOUS ATTACK DETECTED';
+          statusHeadline.className = 'text-2xl sm:text-3xl font-black tracking-tight text-red-400 mt-1';
+          statusSubtext.textContent = 'Critical 5G GTP-U protocol breach. Unauthorized Wildcard TEID 0xFFFFFFFF injection from ingress interface.';
+          heroMse.textContent = (data.mse_score || 106812.5).toFixed(2);
+          heroMse.className = 'text-4xl font-black text-red-500 font-mono';
+          thresholdCmp.textContent = `⚠️ BREACH! Threshold 0.0800 Exceeded`;
+          thresholdCmp.className = 'text-xs text-red-400 font-semibold';
+
+          tileClassification.textContent = 'MALICIOUS';
+          tileClassification.className = 'text-2xl font-black text-red-500 tracking-wide';
+          tileMse.textContent = (data.mse_score || 106812.5).toFixed(2);
+          tileMseBar.style.width = '100%';
+          tileMseBar.className = 'bg-red-500 h-full transition-all duration-500';
+          tileMseRaw.textContent = (data.mse_score || 106812.5).toFixed(4);
+
+          tileTeid.textContent = data.teid || '0xFFFFFFFF';
+          tileTeid.className = 'text-2xl font-black text-red-400 font-mono';
+          tileTeidStatus.textContent = 'WILDCARD EXPLOIT INJECTION';
+          tileTeidStatus.className = 'text-xs text-red-400 font-mono font-bold';
+
+          tileSrcIp.textContent = data.src_ip || '192.168.43.55';
+          tileSrcRole.textContent = 'ROGUE ADVERSARY [BLOCKED]';
+          tileSrcRole.className = 'text-xs text-red-400 font-mono font-bold';
+
+          agentStatusBadge.textContent = 'THREAT MITIGATED // ACTIVE RULE ENFORCED';
+          agentStatusBadge.className = 'text-[11px] font-mono px-2.5 py-0.5 rounded bg-red-950 text-red-400 border border-red-800 font-bold';
+
+          // Threat Report extraction
+          if (data.threat_report) {
+            diagnosisBox.textContent = data.threat_report;
+            actionBox.textContent = `# Autonomous L7 DPI & Edge Mitigation Rules:\niptables -A INPUT -p udp --dport 2152 -m u32 --u32 "0>>22&0x3C@ 4 = 0xFFFFFFFF" -j DROP\niptables -A INPUT -s ${data.src_ip || '192.168.43.55'} -p udp --dport 2152 -j DROP\n\n# Live Windows Host Kernel Killswitch Command:\nnetsh advfirewall firewall add rule name="FRIDAY_BLOCK_${(data.src_ip || '192_168_43_55').replace(/\./g, '_')}" dir=in action=block protocol=UDP localport=2152 remoteip=${data.src_ip || '192.168.43.55'}\n\n# Hardware XDP eBPF DPI Offload:\nip link set dev eth0 xdp obj /etc/bpf/gtp_dpi_filter.o sec dpi_drop`;
+          } else {
+            diagnosisBox.textContent = 'CRITICAL 5G GTP-U ZERO-DAY DETECTED. Deep Packet Inspection identified wildcard TEID (0xFFFFFFFF) exploit.';
+            actionBox.textContent = `iptables -A INPUT -p udp --dport 2152 -m u32 --u32 "0>>22&0x3C@ 4 = 0xFFFFFFFF" -j DROP\niptables -A INPUT -s ${data.src_ip || '192.168.43.55'} -p udp --dport 2152 -j DROP`;
+          }
+        } else {
+          statusBanner.className = 'p-6 sm:p-8 rounded-2xl border transition-all duration-500 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-brand-successDim border-brand-success/40 text-brand-success';
+          statusIcon.textContent = 'verified_user';
+          statusIcon.className = 'material-symbols-outlined text-4xl text-brand-success';
+          statusIconWrap.className = 'w-16 h-16 rounded-2xl bg-brand-success/20 flex items-center justify-center shrink-0';
+          badgeVerdict.className = 'text-xs font-black tracking-widest px-2.5 py-1 rounded bg-brand-success/30 text-white uppercase font-mono';
+          badgeVerdict.textContent = 'SEV-0 NOMINAL';
+          statusHeadline.textContent = 'NORMAL 5G CORE TRAFFIC';
+          statusHeadline.className = 'text-2xl sm:text-3xl font-black tracking-tight text-white mt-1';
+          statusSubtext.textContent = 'All GTP-U packets within standard 3GPP thresholds. No anomalous reconstruction loss detected.';
+          heroMse.textContent = (data.mse_score || 0.0030).toFixed(4);
+          heroMse.className = 'text-4xl font-black text-brand-success font-mono';
+          thresholdCmp.textContent = '✓ 96.2% Below Anomaly Ceiling (0.0800)';
+          thresholdCmp.className = 'text-xs text-brand-success font-semibold';
+
+          tileClassification.textContent = 'NORMAL';
+          tileClassification.className = 'text-2xl font-black text-brand-success tracking-wide';
+          tileMse.textContent = (data.mse_score || 0.0030).toFixed(4);
+          tileMseBar.style.width = '6%';
+          tileMseBar.className = 'bg-brand-success h-full transition-all duration-500';
+          tileMseRaw.textContent = (data.mse_score || 0.0030).toFixed(4);
+
+          tileTeid.textContent = data.teid || '0x000003E9';
+          tileTeid.className = 'text-2xl font-black text-cyan-400 font-mono';
+          tileTeidStatus.textContent = 'Authorized Session Context';
+          tileTeidStatus.className = 'text-xs text-slate-400 mt-1 font-mono';
+
+          tileSrcIp.textContent = data.src_ip || '192.168.43.55';
+          tileSrcRole.textContent = 'Authorized 5G UE Client';
+          tileSrcRole.className = 'text-xs text-slate-400 mt-1 font-mono';
+
+          agentStatusBadge.textContent = 'STANDBY // AWAITING ANOMALY';
+          agentStatusBadge.className = 'text-[11px] font-mono px-2.5 py-0.5 rounded bg-brand-success/20 text-brand-success border border-brand-success/40';
+
+          diagnosisBox.textContent = 'No anomalous drift detected. 5G GTP-U user plane traffic aligns with authorized 3GPP Session Management Function (SMF) state machine.';
+          actionBox.textContent = `# Autonomous L7 DPI & Edge Defense Engine on Standby\n# L7 u32 Byte Filter Active: Blocks wildcard TEID 0xFFFFFFFF\n# Windows Defender Netsh Killswitch Armed: Physical host drops enforced on attack`;
+        }
+
+        // 2. Render Live Packet Stream Table based on active filter tab
+        latestData = data;
+        let displayList = [];
+        if (currentFilter === 'threats') {
+          displayList = data.threats || [];
+        } else if (currentFilter === 'normal') {
+          displayList = (data.history || []).filter(p => p.classification !== 'MALICIOUS');
+        } else {
+          displayList = data.history || [];
+        }
+
+        cntAll.textContent = (data.history || []).length;
+        cntThreats.textContent = data.threat_count !== undefined ? data.threat_count : (data.threats || []).length;
+        cntNormal.textContent = (data.history || []).filter(p => p.classification !== 'MALICIOUS').length;
+
+        if (displayList.length > 0) {
+          packetTableBody.innerHTML = displayList.map(pkt => {
+            const isMal = pkt.classification === 'MALICIOUS';
+            const badgeClass = isMal 
+              ? 'bg-red-500/20 text-red-400 border border-red-500/30 font-bold' 
+              : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+            const actionText = isMal 
+              ? `<span class="text-red-400 font-bold">${pkt.action || 'BLOCKED (DPI + Killswitch)'}</span>` 
+              : '<span class="text-emerald-400">CLEARED</span>';
+
+            return `
+              <tr class="hover:bg-brand-cardHover/50 transition">
+                <td class="px-6 py-2.5 text-slate-400">${pkt.timestamp}</td>
+                <td class="px-6 py-2.5 font-bold ${isMal ? 'text-red-300' : 'text-slate-200'}">${pkt.src_ip}</td>
+                <td class="px-6 py-2.5 text-cyan-400">${pkt.protocol || 'GTP-U'}</td>
+                <td class="px-6 py-2.5 ${isMal ? 'text-red-400 font-bold' : 'text-slate-300'}">${pkt.teid}</td>
+                <td class="px-6 py-2.5 ${isMal ? 'text-red-400 font-bold' : 'text-slate-400'}">${pkt.mse}</td>
+                <td class="px-6 py-2.5">
+                  <span class="px-2 py-0.5 rounded text-[10px] uppercase ${badgeClass}">${pkt.classification}</span>
+                </td>
+                <td class="px-6 py-2.5">${actionText}</td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          packetTableBody.innerHTML = `
+            <tr>
+              <td colspan="7" class="px-6 py-8 text-center text-slate-500 font-sans">
+                No ${currentFilter === 'threats' ? 'malicious threat incidents' : 'packets'} in active view.
+              </td>
+            </tr>
+          `;
+        }
+      }
+
+      // Live status polling
+      async function pollLiveStatus() {
+        try {
+          const res = await fetch('/live-status', { cache: 'no-store' });
+          if (res.ok) {
+            const data = await res.json();
+            updateDashboard(data);
+          }
+        } catch (e) {
+          // silent retry
+        }
+      }
+
+      // Stream toggle
+      btnToggleStream.addEventListener('click', async () => {
+        try {
+          const res = await fetch('/toggle-stream', { method: 'POST' });
+          if (res.ok) pollLiveStatus();
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      // Auto Botnet toggle
+      btnToggleAutoAttack.addEventListener('click', async () => {
+        try {
+          const res = await fetch('/toggle-auto-attack', { method: 'POST' });
+          if (res.ok) pollLiveStatus();
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      // Test Normal 5G
+      btnNormal.addEventListener('click', async () => {
+        btnNormal.disabled = true;
+        const origHtml = btnNormal.innerHTML;
+        btnNormal.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span><span>SENDING...</span>';
+        try {
+          const res = await fetch('/inject-normal', { method: 'POST' });
+          if (res.ok) {
+            const data = await res.json();
+            updateDashboard({ ...data, history: [data, ...cachedHistory] });
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          btnNormal.disabled = false;
+          btnNormal.innerHTML = origHtml;
+        }
+      });
+
+      // Inject Zero-Day Attack
+      btnSimulate.addEventListener('click', async () => {
+        btnSimulate.disabled = true;
+        btnSimulate.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span><span>BLASTING...</span>';
+        try {
+          const res = await fetch('/inject-attack', { method: 'POST' });
+          if (res.ok) {
+            const data = await res.json();
+            updateDashboard({ ...data, history: [data, ...cachedHistory] });
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          btnSimulate.disabled = false;
+          btnSimulate.innerHTML = '<span class="material-symbols-outlined text-base">bolt</span><span>INJECT ZERO-DAY ATTACK</span>';
+        }
+      });
+
+      // Reset
+      btnReset.addEventListener('click', async () => {
+        try {
+          await fetch('/reset', { method: 'POST' });
+          pollLiveStatus();
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      // Flush Firewall
+      btnFlushFirewall.addEventListener('click', async () => {
+        try {
+          await fetch('/firewall/flush', { method: 'POST' });
+          pollLiveStatus();
+          alert("Host firewall rules and blocked IP table have been flushed.");
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      // Toggle Killswitch Mode (Active Drop vs Monitor Only)
+      btnToggleKillMode.addEventListener('click', async () => {
+        try {
+          const res = await fetch('/toggle-killswitch-mode', { method: 'POST' });
+          if (res.ok) pollLiveStatus();
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
+      // Copy Rule
+      btnCopyRule.addEventListener('click', () => {
+        navigator.clipboard.writeText(actionBox.textContent).then(() => {
+          btnCopyText.textContent = 'COPIED!';
+          setTimeout(() => { btnCopyText.textContent = 'COPY RULE'; }, 2000);
+        });
+      });
+
+      // Tab Switching Logic
+      function setTab(filter) {
+        currentFilter = filter;
+        tabAll.className = filter === 'all' 
+          ? 'px-3 py-1 rounded-md bg-brand-card text-white font-bold transition shadow-sm' 
+          : 'px-3 py-1 rounded-md text-slate-400 hover:text-slate-200 transition';
+        tabThreats.className = filter === 'threats' 
+          ? 'px-3 py-1 rounded-md bg-red-950 border border-red-600 text-red-300 font-bold transition flex items-center gap-1 shadow-sm' 
+          : 'px-3 py-1 rounded-md text-red-400 hover:text-red-300 font-bold transition flex items-center gap-1';
+        tabNormal.className = filter === 'normal' 
+          ? 'px-3 py-1 rounded-md bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold transition shadow-sm' 
+          : 'px-3 py-1 rounded-md text-slate-400 hover:text-slate-200 transition';
+        if (latestData) updateDashboard(latestData);
+      }
+
+      tabAll.addEventListener('click', () => setTab('all'));
+      tabThreats.addEventListener('click', () => setTab('threats'));
+      tabNormal.addEventListener('click', () => setTab('normal'));
+
+      // Export JSON
+      btnExportLog.addEventListener('click', () => {
+        const fullAudit = {
+          audit_generated_at: new Date().toISOString(),
+          total_threat_incidents: latestData ? (latestData.threat_count || 0) : 0,
+          threat_incidents: latestData ? (latestData.threats || []) : [],
+          packet_stream_history: cachedHistory
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullAudit, null, 2));
+        const dlAnchor = document.createElement('a');
+        dlAnchor.setAttribute("href", dataStr);
+        dlAnchor.setAttribute("download", `5g_soc_full_incident_audit_${Date.now()}.json`);
+        document.body.appendChild(dlAnchor);
+        dlAnchor.click();
+        dlAnchor.remove();
+      });
+
+      // Mobile Modal
+      btnOpenMobileModal.addEventListener('click', () => {
+        mobileModal.classList.remove('hidden');
+        modalFeedback.textContent = '';
+      });
+
+      btnCloseModal.addEventListener('click', () => {
+        mobileModal.classList.add('hidden');
+      });
+
+      btnSaveTelegram.addEventListener('click', async () => {
+        const bot_token = inputBotToken.value.trim();
+        const chat_id = inputChatId.value.trim();
+        if (!bot_token || !chat_id) {
+          modalFeedback.className = 'text-center text-[11px] font-sans text-red-400 font-bold';
+          modalFeedback.textContent = 'Please enter both Bot Token and Chat ID!';
+          return;
+        }
+        try {
+          const res = await fetch('/config/telegram', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bot_token, chat_id })
+          });
+          if (res.ok) {
+            modalFeedback.className = 'text-center text-[11px] font-sans text-emerald-400 font-bold';
+            modalFeedback.textContent = 'Credentials saved! Now click "TEST PING" to verify.';
+            pollLiveStatus();
+          }
+        } catch (e) {
+          modalFeedback.textContent = 'Failed to save credentials.';
+        }
+      });
+
+      async function triggerTestPing() {
+        try {
+          const res = await fetch('/test-mobile-ping', { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            alert("✅ " + data.message + "\nCheck your Telegram app right now!");
+            pollLiveStatus();
+          } else {
+            alert("⚠️ " + data.message);
+          }
+        } catch (e) {
+          alert("Could not reach backend to send test ping.");
+        }
+      }
+
+      btnTestPingModal.addEventListener('click', triggerTestPing);
+      btnQuickTestPing.addEventListener('click', triggerTestPing);
+
+      // Start live polling every 800ms
+      setInterval(pollLiveStatus, 800);
+      pollLiveStatus();
+    })();
+  </script>
+</body>
+</html>

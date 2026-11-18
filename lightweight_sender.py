@@ -40,7 +40,7 @@ def send_attack(target_ip, target_port=2152, count=25, interval=0.05):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="FRI-DAY Lightweight 5G Sender (No Scapy needed)")
-    parser.add_argument("--target", default="10.0.8.254", help="Target UPF IP address (Dell G15)")
+    parser.add_argument("--target", default="127.0.0.1", help="Target UPF IP address (Default: 127.0.0.1)")
     parser.add_argument("--port", type=int, default=2152, help="Target UDP port (default: 2152)")
     parser.add_argument("--mode", choices=["attack", "normal", "mixed"], default=None, help="Mode: attack, normal, mixed")
     parser.add_argument("--count", type=int, default=20, help="Number of packets")

@@ -93,19 +93,29 @@ def send_attack_probe(target_ip, src_ip=None, count=25, interval=0.05):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="FRI-DAY 5G Traffic Generator (Hybrid Scapy/Socket)")
-    parser.add_argument("--target", default="10.0.8.254", help="Target UPF IP address (Dell G15)")
+    parser.add_argument("--target", default="127.0.0.1", help="Target UPF IP address (Default: 127.0.0.1)")
     parser.add_argument("--src", default="192.168.43.55", help="Source IP address of attacker/client")
     parser.add_argument("--mode", choices=["attack", "normal", "mixed"], default=None, help="Traffic mode")
     parser.add_argument("--count", type=int, default=20, help="Number of packets")
     args = parser.parse_args()
+
+    target_ip = args.target
 
     mode = args.mode
     if not mode:
         print("\n" + "=" * 60)
         print("🚀 FRI-DAY 5G TRAFFIC GENERATOR (HYBRID SCAPY / SOCKET)")
         print("=" * 60)
-        print(f"🎯 Target UPF: {args.target}:2152")
-        print(f"📡 Source IP:  {args.src}")
+        print(f"Default Target UPF: {target_ip}:2152")
+        try:
+            custom_target = input(f"Enter Target IP [Press Enter for {target_ip}]: ").strip()
+            if custom_target:
+                target_ip = custom_target
+        except Exception:
+            pass
+
+        print(f"🎯 Active Target UPF: {target_ip}:2152")
+        print(f"📡 Source IP:        {args.src}")
         print("\nSelect traffic type to send:")
         print("  [1] Continuous Real-Time Stream (Normal 5G + Periodic Attack Spikes) [RECOMMENDED]")
         print("  [2] Send NORMAL 5G Traffic Only (Green / SEV-0 Nominal)")
@@ -122,19 +132,19 @@ if __name__ == "__main__":
         else:
             mode = "mixed"
 
-    print(f"\n[*] Executing mode: {mode.upper()}")
+    print(f"\n[*] Executing mode: {mode.upper()} against {target_ip}:2152")
 
     if mode == "normal":
-        send_normal_packet(args.target, src_ip=args.src, count=args.count)
+        send_normal_packet(target_ip, src_ip=args.src, count=args.count)
     elif mode == "attack":
-        send_attack_probe(args.target, src_ip=args.src, count=args.count)
+        send_attack_probe(target_ip, src_ip=args.src, count=args.count)
     elif mode == "mixed":
         print("[*] Running mixed traffic simulation. Press Ctrl+C to stop...")
         try:
             while True:
-                send_normal_packet(args.target, src_ip=args.src, count=10, interval=0.1)
+                send_normal_packet(target_ip, src_ip=args.src, count=10, interval=0.1)
                 time.sleep(1)
-                send_attack_probe(args.target, src_ip=args.src, count=15, interval=0.03)
+                send_attack_probe(target_ip, src_ip=args.src, count=15, interval=0.03)
                 print("[*] Resting for 4 seconds before next normal stream...")
                 time.sleep(4)
         except KeyboardInterrupt:

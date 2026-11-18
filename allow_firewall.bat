@@ -13,6 +13,10 @@ if %errorLevel% neq 0 (
     exit /b
 )
 
+echo [*] Flushing any leftover killswitch block rules...
+powershell -Command "Get-NetFirewallRule -Name 'FRIDAY_BLOCK_*' -ErrorAction SilentlyContinue | Remove-NetFirewallRule" >nul 2>&1
+powershell -Command "Get-NetFirewallRule -DisplayName 'FRIDAY_BLOCK_*' -ErrorAction SilentlyContinue | Remove-NetFirewallRule" >nul 2>&1
+
 echo [*] Adding Inbound Rule for 5G GTP-U (UDP Port 2152)...
 netsh advfirewall firewall delete rule name="FRI_DAY_UPF_2152" >nul 2>&1
 netsh advfirewall firewall add rule name="FRI_DAY_UPF_2152" dir=in action=allow protocol=UDP localport=2152 profile=any

@@ -68,12 +68,24 @@ ATTACK_TEMPLATE = {
 }
 
 def get_local_ips():
-    """Detects active host IP addresses for network targeting."""
+    """Detects active host IP addresses for network targeting across Linux and Windows."""
     ips = []
+    # Primary interface probe
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        if ip and not ip.startswith("127."):
+            ips.append(ip)
+    except Exception:
+        pass
+
+    # Hostname probe
     try:
         hostname = socket.gethostname()
         for ip in socket.gethostbyname_ex(hostname)[2]:
-            if not ip.startswith("127."):
+            if not ip.startswith("127.") and ip not in ips:
                 ips.append(ip)
     except Exception:
         pass

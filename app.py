@@ -176,33 +176,54 @@ def execute_kernel_killswitch(ip: str):
         return
 
     rule_name = f"FRIDAY_BLOCK_{ip.replace('.', '_')}"
-    cmd = [
-        "netsh", "advfirewall", "firewall", "add", "rule",
-        f"name={rule_name}",
-        "dir=in",
-        "action=block",
-        "protocol=UDP",
-        "localport=2152",
-        f"remoteip={ip}"
-    ]
-    try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=2)
-        if proc.returncode == 0 or "Ok" in proc.stdout:
-            print(f"🔥 [AUTO-KILL SWITCH] Enforced Windows Defender Firewall drop rule on {ip}!")
-        else:
-            print(f"⚡ [HOST SHIELD] Blocked {ip} in Active UPF Firewall Shield.")
-    except Exception as e:
-        print(f"⚡ [HOST SHIELD] Active UPF Shield registered drop rule for {ip} ({e})")
+    if sys.platform.startswith("linux"):
+        cmd = ["iptables", "-A", "INPUT", "-s", ip, "-p", "udp", "--dport", "2152", "-j", "DROP"]
+        try:
+            exec_cmd = ["sudo"] + cmd if hasattr(os, "geteuid") and os.geteuid() != 0 else cmd
+            proc = subprocess.run(exec_cmd, capture_output=True, text=True, timeout=2)
+            if proc.returncode == 0:
+                print(f"🔥 [AUTO-KILL SWITCH] Enforced Linux Kernel iptables drop rule on {ip}!")
+            else:
+                print(f"⚡ [HOST SHIELD] Blocked {ip} in Active UPF Firewall Shield.")
+        except Exception as e:
+            print(f"⚡ [HOST SHIELD] Active UPF Shield registered drop rule for {ip} ({e})")
+    else:
+        cmd = [
+            "netsh", "advfirewall", "firewall", "add", "rule",
+            f"name={rule_name}",
+            "dir=in",
+            "action=block",
+            "protocol=UDP",
+            "localport=2152",
+            f"remoteip={ip}"
+        ]
+        try:
+            proc = subprocess.run(cmd, capture_output=True, text=True, timeout=2)
+            if proc.returncode == 0 or "Ok" in proc.stdout:
+                print(f"🔥 [AUTO-KILL SWITCH] Enforced Windows Defender Firewall drop rule on {ip}!")
+            else:
+                print(f"⚡ [HOST SHIELD] Blocked {ip} in Active UPF Firewall Shield.")
+        except Exception as e:
+            print(f"⚡ [HOST SHIELD] Active UPF Shield registered drop rule for {ip} ({e})")
 
 def flush_host_firewall():
     """Flushes host firewall rules and resets blocked IP list."""
     global blocked_ips, dpi_blocks_count
-    for ip in list(blocked_ips) + ["127.0.0.1"]:
-        rule_name = f"FRIDAY_BLOCK_{ip.replace('.', '_')}"
-        try:
-            subprocess.run(["netsh", "advfirewall", "firewall", "delete", "rule", f"name={rule_name}"], capture_output=True, timeout=1)
-        except Exception:
-            pass
+    if sys.platform.startswith("linux"):
+        for ip in list(blocked_ips):
+            cmd = ["iptables", "-D", "INPUT", "-s", ip, "-p", "udp", "--dport", "2152", "-j", "DROP"]
+            try:
+                exec_cmd = ["sudo"] + cmd if hasattr(os, "geteuid") and os.geteuid() != 0 else cmd
+                subprocess.run(exec_cmd, capture_output=True, timeout=1)
+            except Exception:
+                pass
+    else:
+        for ip in list(blocked_ips) + ["127.0.0.1"]:
+            rule_name = f"FRIDAY_BLOCK_{ip.replace('.', '_')}"
+            try:
+                subprocess.run(["netsh", "advfirewall", "firewall", "delete", "rule", f"name={rule_name}"], capture_output=True, timeout=1)
+            except Exception:
+                pass
     blocked_ips.clear()
     dpi_blocks_count = 0
     print("🧹 [HOST FIREWALL] Flushed host firewall rules and reset blacklist.")
